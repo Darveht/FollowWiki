@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Wikipedia Style Instagram </title>
+  
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Glam 2.4</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #fff;
+      color: #333;
+    }
+    .header, .style-switcher, .future-languages, .grid-container {
+      text-align: center;
+      padding: 20px;
+    }
+    .header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #232f3e;
+      color: #fff;
+      padding: 10px;
+    }
+    .header input, .header select {
+      padding: 10px;
+      margin: 5px;
+      font-size: 16px;
+      border: none;
+    }
+    .header input {
+      padding-right: 30px;
+    }
+    .header select {
+      margin-left: 10px;
+    }
+    .grid-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 20px;
+      padding: 20px;
+    }
+    .grid-item {
+      background-color: #fff;
+      padding: 20px;
+      width: 250px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 10px;
+      text-align: center;
+      position: relative;
+    }
+    .grid-item img {
+      width: 100%;
+      height: auto;
+      border-radius: 10px;
+    }
+    .stars {
+      display: flex;
+      justify-content: center;
+      margin: 10px 0;
+    }
+    .stars i {
+      font-size: 20px;
+      color: #ddd;
+      cursor: pointer;
+    }
+    .stars i.active {
+      color: gold;
+    }
+    .like-dislike {
+      display: flex;
+      justify-content: center;
+      margin-top: 10px;
+    }
+    .like-dislike img {
+      width: 30px;
+      cursor: pointer;
+      margin: 0 10px;
+    }
+    .follow-btn {
+      background-color: #ff9900;
+      color: #fff;
+      padding: 5px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    .follow-btn:hover {
+      background-color: #e68900;
+    }
+    .future-languages, .future-styles {
+      background-color: #fff3cd;
+      padding: 20px;
+    }
+    .countdown {
+      margin-top: 10px;
+      color: #d9534f;
+    }
+    .footer {
+      text-align: center;
+      padding: 20px;
+      background-color: #232f3e;
+      color: #fff;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <input type="text" id="searchInput" placeholder="Buscar en Glam 2.4...">
+    <select id="languageSelect">
+      <option value="es">Español</option>
+      <option value="en">Inglés</option>
+      <option value="pt">Portugués</option>
+      <option value="ja">Japonés</option>
+      <option value="fr">Francés</option>
+      <option value="it">Italiano</option>
+      <option value="ko">Coreano</option>
+      <option value="vi" selected>Vietnamita</option>
+      <option value="th">Tailandés</option>
+    </select>
+  </div>
+
+  <div id="gridContainer" class="grid-container"></div>
+
+  <div class="future-languages">
+    <p>Próximamente disponible en: Vietnamita y Tailandés.</p>
+    <div id="countdown" class="countdown"></div>
+  </div>
+
+  <div class="footer">
+    <p>Powered by Wikipedia</p>
+  </div>
+
+  <script>
+    let currentPage = 1;
+    let query = '';
+    let language = 'vi'; // Vietnamita por defecto
+    let loading = false;
+
+    document.getElementById('searchInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+        searchWikipedia();
+      }
+    });
+
+    document.getElementById('languageSelect').addEventListener('change', function() {
+      language = this.value;
+      searchWikipedia();
+    });
+
+    function searchWikipedia() {
+      query = document.getElementById('searchInput').value;
+      currentPage = 1;
+      const gridContainer = document.getElementById('gridContainer');
+      gridContainer.innerHTML = '';
+      fetchResults();
+    }
+
+    function fetchResults() {
+      loading = true;
+      const url = `https://${language}.wikipedia.org/w/api.php?action=query&list=search&srsearch=${query}&utf8=&format=json&origin=*&srlimit=10&sroffset=${(currentPage - 1) * 10}`;
+      fetch(url)
+        .then(response => response.json())
+        .then(data => {
+          const results = data.query.search;
+          displayResults(results);
+          loading = false;
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          loading = false;
+        });
+    }
+
+    function displayResults(results) {
+      const gridContainer = document.getElementById('gridContainer');
+      results.forEach(result => {
+        const pageUrl = `https://${language}.wikipedia.org/?curid=${result.pageid}`;
+        const imageUrl = `https://${language}.wikipedia.org/w/api.php?action=query&titles=${result.title}&prop=pageimages&format=json&origin=*`;
+
+        fetch(imageUrl)
+          .then(response => response.json())
+          .then(data => {
+            const page = Object.values(data.query.pages)[0];
+            const imageSrc = page.thumbnail ? page.thumbnail.source : 'https://via.placeholder.com/250x150';
+
+            const item = document.createElement('div');
+            item.className = 'grid-item';
+            item.innerHTML = `
+              <img src="${imageSrc}" alt="Imagen">
+              <h3>${result.title}</h3>
+              <p>${result.snippet}</p>
+              <a href="${pageUrl}" target="_blank">Leer más</a>
+              <div class="stars" onclick="rateArticle(event)">
+                <i class="fa fa-star" data-value="1"></i>
+                <i class="fa fa-star" data-value="2"></i>
+                <i class="fa fa-star" data-value="3"></i>
+                <i class="fa fa-star" data-value="4"></i>
+                <i class="fa fa-star" data-value="5"></i>
+              </div>
+              <div class="like-dislike">
+                <img src="https://cdn-icons-png.flaticon.com/512/3772/3772194.png" alt="Like" onclick="likeArticle(event)">
+                <img src="https://cdn-icons-png.flaticon.com/512/8928/8928524.png" alt="Dislike" onclick="dislikeArticle(event)">
+              </div>
+              <button class="follow-btn" onclick="followArticle(event)">Seguir</button>
+            `;
+            gridContainer.appendChild(item);
+          });
+      });
+    }
+
+    function rateArticle(event) {
+      const stars = event.target.parentElement.querySelectorAll('i');
+      const value = event.target.dataset.value;
+      stars.forEach(star => {
+        if (parseInt(star.dataset.value) <= value) {
+          star.classList.add('active');
+        } else {
+          star.classList.remove('active');
+        }
+      });
+      alert(`¡Has calificado con ${value} estrella(s)!`);
+    }
+
+    function likeArticle(event) {
+      alert('¡Te gusta este artículo!');
+    }
+
+    function dislikeArticle(event) {
+      alert('¡No te gusta este artículo!');
+    }
+
+    function followArticle(event) {
+      const button = event.target;
+      button.textContent = button.textContent === 'Seguir' ? 'Siguiendo' : 'Seguir';
+      button.classList.toggle('active');
+      alert(button.textContent === 'Siguiendo' ? 'Estás siguiendo este artículo.' : 'Has dejado de seguir este artículo.');
+    }
+  </script>
+</body>
+</html>
+<!-- partial -->
+  
+</body>
+</html>
